@@ -132,7 +132,10 @@ class Pool:
                         timeout = self.settings.read_timeout
                         if pending:
                             timeout = min(timeout, max(0.001, deadline - time.monotonic()))
-                        raw = await asyncio.wait_for(ws.recv(), timeout)
+                        # Keep recv in this task: wait_for's child-task cancellation race
+                        # on Python 3.11 can swallow a concurrent shutdown cancellation.
+                        async with asyncio.timeout(timeout):
+                            raw = await ws.recv()
                         received = time.time_ns()
                         state["last_message"] = time.monotonic()
                         self.counters["messages_received"] += 1
