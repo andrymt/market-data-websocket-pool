@@ -209,3 +209,23 @@ class PoolTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaisesRegex(OSError, "disk full"):
             await asyncio.wait_for(pool.run(asyncio.Event()), 1)
         self.assertTrue(ws.closed)
+
+    async def test_reader_cancel_at_receive_completion(self):
+        worker = None
+
+        class RacingSocket(FakeSocket):
+            async def recv(self):
+                if self.messages:
+                    value = self.messages.pop(0)
+                    if value == MATCH:
+                        asyncio.get_running_loop().call_soon(worker.cancel)
+                    return value
+                await asyncio.Future()
+
+        ws = RacingSocket([ACK, MATCH])
+        pool = self.pool(connector=lambda *a, **kw: ws)
+        worker = asyncio.create_task(pool.reader(ADAPTERS["coinbase"], 0))
+        with self.assertRaises(asyncio.CancelledError):
+            async with asyncio.timeout(1):
+                await worker
+        self.assertTrue(ws.closed)
