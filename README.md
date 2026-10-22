@@ -111,7 +111,7 @@ ruff format --check src tests
 python -m build
 ```
 
-Tests are offline and deterministic except for bounded scheduling waits in asynchronous tests. They cover protocol normalization, decimal/timestamp precision, maker/taker semantics, acknowledgements, malformed payloads, duplicates, corrections, late arrival, TTL/capacity eviction, backoff bounds, silent connections, reconnect/resubscribe, redundant readers, backpressure and sink failure. Live exchange calls are deliberately excluded from CI.
+Tests are offline and deterministic except for bounded scheduling waits in asynchronous tests. They cover protocol normalization, decimal/timestamp precision, maker/taker semantics, acknowledgements, malformed payloads, duplicates, corrections, late arrival, TTL/capacity eviction, backoff bounds, silent connections, reconnect/resubscribe, redundant readers, backpressure and sink failure and receive/cancel races. Live exchange calls are deliberately excluded from CI.
 
 Container option:
 
@@ -139,7 +139,7 @@ MIT for the source code. Exchange data rights remain with their respective provi
 
 Checked on Python 3.12 on October 21, 2026:
 
-- 24 offline tests passed; lint and formatting checks passed.
+- 25 offline tests passed; lint and formatting checks passed.
 - A 30-second public-feed smoke run received 239 normalized trades across all three exchanges and both configured symbols.
 - A separate 15-second redundant-reader run received 176 trade messages, emitted 88 unique trades, and suppressed 88 duplicates.
 - Source and wheel distributions built, and the installed wheel's CLI and tests were verified.
